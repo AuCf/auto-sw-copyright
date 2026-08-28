@@ -28,10 +28,16 @@ from PIL import Image, ImageDraw, ImageFont
 
 def get_font(size: int, bold: bool = False):
     font_candidates = [
+        # Windows Fonts
         ("C:\\Windows\\Fonts\\msyhbd.ttc", 0) if bold else ("C:\\Windows\\Fonts\\msyh.ttc", 0),
         ("C:\\Windows\\Fonts\\msyh.ttc", 0),
         ("C:\\Windows\\Fonts\\simhei.ttf", 0),
         ("C:\\Windows\\Fonts\\simsun.ttc", 0),
+        # Linux / Docker Debian/Ubuntu Fonts (wqy-zenhei, wqy-microhei, noto)
+        ("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", 0),
+        ("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc", 0),
+        ("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", 0),
+        ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 0),
     ]
 
     for path, idx in font_candidates:

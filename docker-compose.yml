@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: autocopyright-backend
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/settings.json:/app/settings.json
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: autocopyright-frontend
+    restart: always
+    ports:
+      - "80:80"       # Standard Web HTTP Port
+      - "5188:80"     # Backup Port
+    depends_on:
+      - backend
