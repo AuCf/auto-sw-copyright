@@ -8,6 +8,4 @@ services:
     container_name: autocopyright-app
     restart: always
     ports:
-      - "5188:8000"    # Use clean non-8xxx port 5188
-    volumes:
-      - ./backend/settings.json:/app/backend/settings.json
+      - "5188:8000"

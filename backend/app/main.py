@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import settings, blueprint, code, manual, form_info, export
+import os
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse, JSONResponse
 
 app = FastAPI(
     title="AutoCopyright-AI Backend",
@@ -8,7 +12,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,25 +34,32 @@ def health():
     return {"status": "healthy"}
 
 # Single-Process Serving: Serve built Vue 3 frontend if dist directory exists
-import os
-from pathlib import Path
-from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse
+DIST_CANDIDATES = [
+    Path(__file__).resolve().parent.parent.parent / "frontend" / "dist",
+    Path(__file__).resolve().parent.parent / "frontend" / "dist",
+    Path(__file__).resolve().parent.parent / "static",
+    Path("/app/frontend/dist"),
+]
 
-DIST_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
-if not DIST_DIR.exists():
-    # Check alternate location inside backend/static
-    DIST_DIR = Path(__file__).resolve().parent.parent / "static"
+ACTIVE_DIST_DIR: Path | None = None
+for candidate in DIST_CANDIDATES:
+    if candidate.exists() and (candidate / "index.html").exists():
+        ACTIVE_DIST_DIR = candidate
+        break
 
-if DIST_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="assets")
+if ACTIVE_DIST_DIR:
+    assets_dir = ACTIVE_DIST_DIR / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        file_path = DIST_DIR / full_path
+        if not ACTIVE_DIST_DIR:
+            return JSONResponse({"error": "Frontend dist not found"}, status_code=404)
+        file_path = ACTIVE_DIST_DIR / full_path
         if file_path.is_file():
             return FileResponse(str(file_path))
-        return FileResponse(str(DIST_DIR / "index.html"))
+        return FileResponse(str(ACTIVE_DIST_DIR / "index.html"))
 else:
     @app.get("/")
     def root():
@@ -56,6 +67,6 @@ else:
             "system": "AutoCopyright-AI Backend",
             "status": "online",
             "version": "1.0.0",
-            "note": "Frontend dist not found. Run Vite dev server or build frontend dist."
+            "api_docs": "/docs",
+            "note": "Frontend dist not mounted. Visit /docs to test API."
         }
-
