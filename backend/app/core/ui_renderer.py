@@ -182,9 +182,9 @@ class UIMockupRenderer:
 
         self._draw_window_shell(draw, "login")
 
-        # Dynamic Gradient background
-        draw.rectangle([(0, 76), (self.width, 360)], fill=self.primary_dark)
-        draw.rectangle([(0, 350), (self.width, 360)], fill=self.primary_color)
+        # Clean minimalist neutral background
+        draw.rectangle([(0, 76), (self.width, self.height)], fill=(248, 250, 252))
+        draw.rectangle([(0, 76), (self.width, 220)], fill=(241, 245, 249), outline=self.border_color)
 
         card_w, card_h = 540, 490
         cx = (self.width - card_w) // 2
